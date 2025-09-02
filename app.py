@@ -45,7 +45,7 @@ def app2():
 
     return "<h5>Hola, soy la view app</h5>"
 
-@app.route("/tbodyProductos")
+@app.route("/productos")
 def productos():
     return render_template("productos.html")
 
@@ -233,5 +233,6 @@ def eliminarProducto():
     con.close()
 
     return make_response(jsonify({}))
+
 
 
