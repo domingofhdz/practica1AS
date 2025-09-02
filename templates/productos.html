@@ -1,0 +1,24 @@
+<div class="table-responsive">
+    <table class="table table-sm">
+        <thead class="table-active">
+            <tr>
+                <th>Id</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Existencias</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos %}
+            <tr>
+                <td>{{ producto.Id_Producto }}</td>
+                <td>{{ producto.Nombre_Producto }}</td>
+                <td>{{ producto.Precio }}</td>
+                <td>{{ producto.Existencias }}</td>
+                <td><button class="btn btn-info btn-ingredientes" data-id="{{ producto.Id_Producto }}">Ver ingredientes...</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
