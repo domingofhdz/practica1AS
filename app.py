@@ -47,6 +47,11 @@ def app2():
 
 @app.route("/tbodyProductos")
 def productos():
+    return render_template("productos.html")
+
+
+@app.route("/tbodyProductos")
+def tbodyProductos():
     if not con.is_connected():
         con.reconnect()
 
@@ -228,4 +233,5 @@ def eliminarProducto():
     con.close()
 
     return make_response(jsonify({}))
+
 
