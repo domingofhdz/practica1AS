@@ -21,6 +21,10 @@ app.config(function ($routeProvider, $locationProvider) {
         templateUrl: "/productos",
         controller: "productosCtrl"
     })
+    .when("/decoraciones", {
+        templateUrl: "/decoraciones",
+        controller: "decoracionesCtrl"
+    })
     .when("/alumnos", {
         templateUrl: "/alumnos",
         controller: "alumnosCtrl"
@@ -127,6 +131,42 @@ app.controller("productosCtrl", function ($scope, $http) {
         })
     })
 })
+
+app.controller("decoracionesCtrl", function ($scope, $http) {
+    function buscarDecoraciones() {
+        $.get("/tbodyDecoraciones", function (trsHTML) {
+            $("#tbodyDecoraciones").html(trsHTML)
+        })
+    }
+
+    buscarDecoraciones()
+    
+    // Enable pusher logging - don't include this in production
+    Pusher.logToConsole = true
+
+    var pusher = new Pusher("e57a8ad0a9dc2e83d9a2", {
+      cluster: "us2"
+    })
+
+    var channel = pusher.subscribe("canalProductos")
+    channel.bind("eventoDecoraciones", function(data) {
+        // alert(JSON.stringify(data))
+        buscarDecoraciones()
+    })
+
+    $(document).on("submit", "#frmDecoracion", function (event) {
+        event.preventDefault()
+
+        $.post("/decoracion", {
+            id: "",
+            nombre: $("#txtNombre").val(),
+            precio: $("#txtPrecio").val(),
+            existencias: $("#txtExistencias").val(),
+        })
+    })
+})
+
+
 app.controller("alumnosCtrl", function ($scope, $http) {
 })
 app.controller("ventasCtrl", function ($scope, $http) {
@@ -153,6 +193,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     activeMenuOption(location.hash)
 })
+
 
 
 
