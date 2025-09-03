@@ -59,8 +59,9 @@ app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, 
         $("html").css("overflow-x", "hidden")
 
         document.addEventListener("DOMContentLoaded", function () {
+            console.log("Ya cargó el documento.")
             // Enable pusher logging - don't include this in production
-            Pusher.logToConsole = true;
+            Pusher.logToConsole = true
         
             var pusher = new Pusher("e57a8ad0a9dc2e83d9a2", {
               cluster: "us2"
@@ -156,6 +157,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     activeMenuOption(location.hash)
 })
+
 
 
 
