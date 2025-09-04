@@ -21,10 +21,12 @@ app.config(function ($routeProvider, $locationProvider) {
         templateUrl: "/productos",
         controller: "productosCtrl"
     })
+
     .when("/decoraciones", {
         templateUrl: "/decoraciones",
         controller: "decoracionesCtrl"
     })
+
     .when("/alumnos", {
         templateUrl: "/alumnos",
         controller: "alumnosCtrl"
@@ -132,6 +134,8 @@ app.controller("productosCtrl", function ($scope, $http) {
     })
 })
 
+
+
 app.controller("decoracionesCtrl", function ($scope, $http) {
     function buscarDecoraciones() {
         $.get("/tbodyDecoraciones", function (trsHTML) {
@@ -148,7 +152,7 @@ app.controller("decoracionesCtrl", function ($scope, $http) {
       cluster: "us2"
     })
 
-    var channel = pusher.subscribe("canalProductos")
+    var channel = pusher.subscribe("canalDecoraciones")
     channel.bind("eventoDecoraciones", function(data) {
         // alert(JSON.stringify(data))
         buscarDecoraciones()
@@ -165,6 +169,7 @@ app.controller("decoracionesCtrl", function ($scope, $http) {
         })
     })
 })
+
 
 
 app.controller("alumnosCtrl", function ($scope, $http) {
@@ -193,6 +198,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     activeMenuOption(location.hash)
 })
+
 
 
 
