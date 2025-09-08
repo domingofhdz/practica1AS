@@ -22,27 +22,16 @@ app.config(function ($routeProvider, $locationProvider) {
         controller: "productosCtrl"
     })
 
+
+
     .when("/decoraciones", {
         templateUrl: "/decoraciones",
         controller: "decoracionesCtrl"
     })
 
-    .when("/alumnos", {
-        templateUrl: "/alumnos",
-        controller: "alumnosCtrl"
-    })
-    .when("/ventas", {
-        templateUrl: "/ventas",
-        controller: "ventasCtrl"
-    })
-    .when("/reportes", {
-        templateUrl: "/reportes",
-        controller: "reportesCtrl"
-    })
-    .when("/notificaciones", {
-        templateUrl: "/notificaciones",
-        controller: "notificacionesCtrl"
-    })
+
+
+
     .otherwise({
         redirectTo: "/"
     })
@@ -172,15 +161,6 @@ app.controller("decoracionesCtrl", function ($scope, $http) {
 
 
 
-app.controller("alumnosCtrl", function ($scope, $http) {
-})
-app.controller("ventasCtrl", function ($scope, $http) {
-})
-app.controller("reportesCtrl", function ($scope, $http) {
-})
-app.controller("notificacionesCtrl", function ($scope, $http) {
-})
-
 const DateTime = luxon.DateTime
 let lxFechaHora
 
@@ -198,14 +178,3 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     activeMenuOption(location.hash)
 })
-
-
-
-
-
-
-
-
-
-
-

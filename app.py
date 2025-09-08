@@ -99,7 +99,7 @@ def tbodyProductos():
     return render_template("tbodyProductos.html", productos=registros)
 
 @app.route("/productos/ingredientes/<int:id>")
-def productos2(id):
+def productosIngredientes(id):
     if not con.is_connected():
         con.reconnect()
 
@@ -249,8 +249,3 @@ def eliminarProducto():
     con.close()
 
     return make_response(jsonify({}))
-
-
-
-
-
