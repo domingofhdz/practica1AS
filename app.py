@@ -57,12 +57,38 @@ def app2():
 
     con.close()
 
-    return "<h5>Hola, soy la view app</h5>"
+    return render_template("login.html")
+    # return "<h5>Hola, soy la view app</h5>"
+
+@app.route("/iniciarSesion", methods=["POST"])
+# Usar cuando solo se quiera usar CORS en rutas específicas
+# @cross_origin()
+def iniciarSesion():
+    if not con.is_connected():
+        con.reconnect()
+
+    usuario    = request.form["txtUsuario"]
+    contrasena = request.form["txtContrasena"]
+
+    cursor = con.cursor(dictionary=True)
+    sql    = """
+    SELECT Id_Usuario
+    FROM usuarios
+
+    WHERE Nombre_Usuario = %s
+    AND Contrasena = %s
+    """
+    val    = (usuario, contrasena)
+
+    cursor.execute(sql, val)
+    registros = cursor.fetchall()
+    con.close()
+
+    return make_response(jsonify(registros))
 
 @app.route("/productos")
 def productos():
     return render_template("productos.html")
-
 
 @app.route("/tbodyProductos")
 def tbodyProductos():
