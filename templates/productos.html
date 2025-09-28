@@ -1,20 +1,26 @@
 <form id="frmProducto" method="post">
     <div class="mb-1">
         <label>Nombre</label>
-        <input type="text" class="form-control" id="txtNombre" name="txtNombre">
+        <input type="text" class="form-control while-waiting" id="txtNombre" name="txtNombre">
     </div>
     <div class="mb-1">
         <label>Precio</label>
-        <input type="text" class="form-control" id="txtPrecio" name="txtPrecio">
+        <input type="text" class="form-control while-waiting" id="txtPrecio" name="txtPrecio">
     </div>
     <div class="mb-1">
         <label>Existencias</label>
-        <input type="text" class="form-control" id="txtExistencias" name="txtExistencias">
+        <input type="text" class="form-control while-waiting" id="txtExistencias" name="txtExistencias">
     </div>
     <div class="mb-1 text-end">
-        <button class="btn btn-primary">Guardar</button>
+        <button class="btn btn-primary while-waiting">Guardar</button>
     </div>
 </form>
+<div class="form-check">
+    <input class="form-check-input" type="checkbox" value="" id="chkActualizarAutoTbodyProductos">
+    <label class="form-check-label" for="chkActualizarAutoTbodyProductos">
+        Actualizar cuando haya cambios
+    </label>
+</div>
 <div class="table-responsive">
     <table class="table table-sm">
         <thead class="table-active">

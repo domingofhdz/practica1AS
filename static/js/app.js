@@ -232,6 +232,7 @@ app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, 
 
                 // solo hacer al cargar la página por primera vez
                 if (timesChangesSuccessRoute == 0) {
+                    timesChangesSuccessRoute++
 
 
                     // gets
@@ -314,15 +315,22 @@ app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, 
 app.controller("appCtrl", function ($scope, $http) {
     $("#frmInicioSesion").submit(function (event) {
         event.preventDefault()
+
+        pop(".div-inicio-sesion", 'ℹ️Iniciando sesi&oacute;n, espere un momento...', "primary")
+
         $.post("iniciarSesion", $(this).serialize(), function (respuesta) {
+            enableAll()
+
             if (respuesta.length) {
                 location.reload()
 
                 return
             }
 
-            alert("Usuario y/o Contraseña Incorrecto(s)")
+            pop(".div-inicio-sesion", '❌Usuario y/o contrase&ntilde;a incorrecto(s).', "danger")
         })
+
+        disableAll()
     })
 })
 app.controller("productosCtrl", function ($scope, $http, $rootScope) {
@@ -337,6 +345,7 @@ app.controller("productosCtrl", function ($scope, $http, $rootScope) {
         $.get("productos/buscar", {
             busqueda: ""
         }, function (productos) {
+            enableAll()
             $("#tbodyProductos").html("")
             for (let x in productos) {
                 const producto = productos[x]
@@ -347,12 +356,13 @@ app.controller("productosCtrl", function ($scope, $http, $rootScope) {
                     <td>${producto.Precio}</td>
                     <td>${producto.Existencias}</td>
                     <td>
-                        <button class="btn btn-info btn-ingredientes me-1 mb-1" data-id="${producto.Id_Producto}">Ver ingredientes...</button>
-                        <button class="btn btn-danger btn-eliminar" data-id="${producto.Id_Producto}">Eliminar</button>
+                        <button class="btn btn-info btn-ingredientes me-1 mb-1 while-waiting" data-id="${producto.Id_Producto}">Ver ingredientes...</button>
+                        <button class="btn btn-danger btn-eliminar while-waiting" data-id="${producto.Id_Producto}">Eliminar</button>
                     </td>
                 </tr>`)
             }
         })
+        disableAll()
     }
 
     buscarProductos()
@@ -374,7 +384,10 @@ app.controller("productosCtrl", function ($scope, $http, $rootScope) {
             nombre: $("#txtNombre").val(),
             precio: $("#txtPrecio").val(),
             existencias: $("#txtExistencias").val(),
+        }, function (respuesta) {
+            enableAll()
         })
+        disableAll()
     })
 
     $(document).on("click", "#chkActualizarAutoTbodyProductos", function (event) {
@@ -406,12 +419,14 @@ app.controller("productosCtrl", function ($scope, $http, $rootScope) {
 
         modal("Eliminar este producto?", 'Confirmaci&oacute;n', [
             {html: "No", class: "btn btn-secondary", dismiss: true},
-            {html: "Sí", class: "btn btn-danger", defaultButton: true, fun: function () {
+            {html: "Sí", class: "btn btn-danger while-waiting", defaultButton: true, fun: function () {
                 $.post(`producto/eliminar`, {
                     id: id
                 }, function (respuesta) {
+                    enableAll()
                     closeModal()
                 })
+                disableAll()
             }}
         ])
     })
