@@ -322,12 +322,14 @@ app.controller("appCtrl", function ($scope, $http) {
             enableAll()
 
             if (respuesta.length) {
+                localStorage.setItem("login", "1")
+                localStorage.setItem("preferencias", JSON.stringify(respuesta[0]))
+                $("#frmInicioSesion").get(0).reset()
                 location.reload()
-
                 return
             }
 
-            pop(".div-inicio-sesion", '❌Usuario y/o contrase&ntilde;a incorrecto(s).', "danger")
+            pop(".div-inicio-sesion", "Usuario y/o contrase&ntilde;a incorrecto(s)", "danger")
         })
 
         disableAll()
