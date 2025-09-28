@@ -232,7 +232,7 @@ app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, 
 
                 // solo hacer al cargar la página por primera vez
                 if (timesChangesSuccessRoute == 0) {
-                    timesChangesSuccessRoute++
+
 
                     // gets
                     const startTimeRequest = Date.now()
@@ -263,6 +263,45 @@ app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, 
                         localStorage.setItem("login", login)
                         localStorage.setItem("preferencias", JSON.stringify(preferencias))
                         $rootScope.redireccionar(login, preferencias)
+                    })
+
+
+                    // events
+                    $(document).on("click", ".toggle-password", function (event) {
+                        const prev = $(this).parent().find("input")
+
+                        if (prev.prop("disabled")) {
+                            return
+                        }
+
+                        prev.focus()
+
+                        if ("selectionStart" in prev.get(0)){
+                            $timeout(function () {
+                                prev.get(0).selectionStart = prev.val().length
+                                prev.get(0).selectionEnd   = prev.val().length
+                            }, 0)
+                        }
+
+                        if (prev.attr("type") == "password") {
+                            $(this).children().first()
+                            .removeClass("bi-eye")
+                            .addClass("bi-eye-slash")
+                            prev.attr({
+                                "type": "text",
+                                "autocomplete": "off",
+                                "data-autocomplete": prev.attr("autocomplete")
+                            })
+                            return
+                        }
+
+                        $(this).children().first()
+                        .addClass("bi-eye")
+                        .removeClass("bi-eye-slash")
+                        prev.attr({
+                            "type": "password",
+                            "autocomplete": prev.attr("data-autocomplete")
+                        })
                     })
                 }
             }, 500)
