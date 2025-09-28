@@ -180,8 +180,9 @@ def productosIngredientes(id):
     WHERE productos_ingredientes.Id_Producto = %s
     ORDER BY productos.Nombre_Producto
     """
+    val    = (id,)
 
-    cursor.execute(sql, (id, ))
+    cursor.execute(sql, val)
     registros = cursor.fetchall()
     if cursor:
         cursor.close()
@@ -205,20 +206,18 @@ def guardarProducto():
     if id:
         sql = """
         UPDATE productos
-
         SET Nombre_Producto = %s,
             Precio          = %s,
             Existencias     = %s
-
         WHERE Id_Producto = %s
         """
         val = (nombre, precio, existencias, id)
     else:
         sql = """
         INSERT INTO productos (Nombre_Producto, Precio, Existencias)
-                    VALUES    (%s,          %s,      %s)
+        VALUES                (%s,              %s,     %s)
         """
-        val =               (nombre, precio, existencias)
+        val =                 (nombre, precio, existencias)
     
     cursor.execute(sql, val)
     con.commit()
