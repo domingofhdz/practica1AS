@@ -301,7 +301,7 @@ app.controller("productosCtrl", function ($scope, $http, $rootScope) {
                     <td>${producto.Precio}</td>
                     <td>${producto.Existencias}</td>
                     <td>
-                        <button class="btn btn-info btn-ingredientes" data-id="${producto.Id_Producto}">Ver ingredientes...</button>
+                        <button class="btn btn-info btn-ingredientes me-1 mb-1" data-id="${producto.Id_Producto}">Ver ingredientes...</button>
                         <button class="btn btn-danger btn-eliminar" data-id="${producto.Id_Producto}">Eliminar</button>
                     </td>
                 </tr>`)
