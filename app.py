@@ -79,8 +79,8 @@ def app2():
 # Usar cuando solo se quiera usar CORS en rutas específicas
 # @cross_origin()
 def iniciarSesion():
-    usuario    = request.form["txtUsuario"]
-    contrasena = request.form["txtContrasena"]
+    usuario    = request.form["usuario"]
+    contrasena = request.form["contrasena"]
 
     con    = con_pool.get_connection()
     cursor = con.cursor(dictionary=True)
