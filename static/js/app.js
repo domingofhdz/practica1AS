@@ -1,5 +1,5 @@
 function activeMenuOption(href) {
-    $(".app-menu .nav-link")
+    $("#appMenu .nav-link")
     .removeClass("active")
     .removeAttr('aria-current')
 
@@ -24,12 +24,12 @@ function enableAll() {
     })
 }
 
-function debounce(func, delay) {
+function debounce(fun, delay) {
     let timer
     return function (...args) {
         clearTimeout(timer)
         timer = setTimeout(function () {
-            func.apply(this, args)
+            fun.apply(this, args)
         }, delay)
     }
 }
@@ -213,7 +213,7 @@ app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, 
 
 
             // animate.css
-            const active = $(".app-menu .nav-link.active").parent().index()
+            const active = $("#appMenu .nav-link.active").parent().index()
             const click  = $(`[href^="#${path}"]`).parent().index()
 
             if ((active <= 0)
