@@ -8,27 +8,67 @@ function activeMenuOption(href) {
     .attr("aria-current", "page")
 }
 
+function disableAll() {
+    const elements = document.querySelectorAll(".while-waiting")
+    elements.forEach(function (el, index) {
+        el.setAttribute("disabled", "true")
+        el.classList.add("disabled")
+    })
+}
+
+function enableAll() {
+    const elements = document.querySelectorAll(".while-waiting")
+    elements.forEach(function (el, index) {
+        el.removeAttribute("disabled")
+        el.classList.remove("disabled")
+    })
+}
+
+function debounce(func, delay) {
+    let timer
+    return function (...args) {
+        clearTimeout(timer)
+        timer = setTimeout(function () {
+            func.apply(this, args)
+        }, delay)
+    }
+}
+
+const configFechaHora = {
+    locale: "es",
+    weekNumbers: true,
+    // enableTime: true,
+    minuteIncrement: 15,
+    altInput: true,
+    altFormat: "d/F/Y",
+    dateFormat: "Y-m-d",
+    // time_24hr: false
+}
+
+const DateTime = luxon.DateTime
+let lxFechaHora
+let diffMs = 0
+
 const app = angular.module("angularjsApp", ["ngRoute"])
 app.config(function ($routeProvider, $locationProvider) {
     $locationProvider.hashPrefix("")
 
     $routeProvider
     .when("/", {
-        templateUrl: "/app",
+        templateUrl: "app",
         controller: "appCtrl"
     })
     .when("/productos", {
-        templateUrl: "/productos",
+        templateUrl: "productos",
         controller: "productosCtrl"
     })
 
 
 
     .when("/decoraciones", {
-        templateUrl: "/decoraciones",
+        templateUrl: "decoraciones",
         controller: "decoracionesCtrl"
     })
-
 
 
 
@@ -37,38 +77,195 @@ app.config(function ($routeProvider, $locationProvider) {
     })
 })
 app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, $timeout) {
+    $rootScope.slide             = ""
+    $rootScope.spinnerGrow       = false
+    $rootScope.sendingRequest    = false
+    $rootScope.incompleteRequest = false
+    $rootScope.completeRequest   = false
+    $rootScope.login             = localStorage.getItem("login")
+    const defaultRouteAuth       = "#/productos"
+    let timesChangesSuccessRoute = 0
+
+
     function actualizarFechaHora() {
-        lxFechaHora = DateTime
-        .now()
-        .setLocale("es")
+        lxFechaHora = DateTime.now().plus({
+            milliseconds: diffMs
+        })
 
-        $rootScope.angularjsHora = lxFechaHora.toFormat("hh:mm:ss a")
-        $timeout(actualizarFechaHora, 1000)
+        $rootScope.angularjsHora = lxFechaHora.setLocale("es").toFormat("hh:mm:ss a")
+        $timeout(actualizarFechaHora, 500)
     }
-
-    $rootScope.slide = ""
-
     actualizarFechaHora()
 
+
+    let preferencias = localStorage.getItem("preferencias")
+    try {
+        preferencias = (preferencias ? JSON.parse(preferencias) :  {})
+    }
+    catch (error) {
+        preferencias = {}
+    }
+    $rootScope.preferencias = preferencias
+
+
     $rootScope.$on("$routeChangeSuccess", function (event, current, previous) {
-        $("html").css("overflow-x", "hidden")
-        
-        const path = current.$$route.originalPath
+        $rootScope.spinnerGrow = false
+        const path             = current.$$route.originalPath
+
+
+        // AJAX Setup
+        $.ajaxSetup({
+            beforeSend: function (xhr) {
+                // $rootScope.sendingRequest = true
+            },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("JWT")}`
+            },
+            error: function (error) {
+                $rootScope.sendingRequest    = false
+                $rootScope.incompleteRequest = false
+                $rootScope.completeRequest   = true
+
+                const status = error.status
+                enableAll()
+
+                if (status) {
+                    const respuesta = error.responseText
+                    console.log("error", respuesta)
+
+                    if (status == 401) {
+                        cerrarSesion()
+                        return
+                    }
+
+                    modal(respuesta, "Error", [
+                        {html: "Aceptar", class: "btn btn-lg btn-secondary", defaultButton: true, dismiss: true}
+                    ])
+                }
+                else {
+                    toast("Error en la petici&oacute;n.")
+                    $rootScope.sendingRequest    = false
+                    $rootScope.incompleteRequest = true
+                    $rootScope.completeRequest   = false
+                }
+            },
+            statusCode: {
+                200: function (respuesta) {
+                    $rootScope.sendingRequest    = false
+                    $rootScope.incompleteRequest = false
+                    $rootScope.completeRequest   = true
+                },
+                401: function (respuesta) {
+                    cerrarSesion()
+                },
+            }
+        })
+
 
         if (path.indexOf("splash") == -1) {
+            // validar login
+            function validarRedireccionamiento() {
+                const login = localStorage.getItem("login")
+
+                if (login) {
+                    if (path == "/") {
+                        window.location = defaultRouteAuth
+                        return
+                    }
+
+                    $(".btn-cerrar-sesion").click(function (event) {
+                        $.post("cerrarSesion")
+                        $timeout(function () {
+                            cerrarSesion()
+                        }, 500)
+                    })
+                }
+                else if ((path != "/")
+                    &&  (path.indexOf("emailToken") == -1)
+                    &&  (path.indexOf("resetPassToken") == -1)) {
+                    window.location = "#/"
+                }
+            }
+            function cerrarSesion() {
+                localStorage.removeItem("JWT")
+                localStorage.removeItem("login")
+                localStorage.removeItem("preferencias")
+
+                const login      = localStorage.getItem("login")
+                let preferencias = localStorage.getItem("preferencias")
+
+                try {
+                    preferencias = (preferencias ? JSON.parse(preferencias) :  {})
+                }
+                catch (error) {
+                    preferencias = {}
+                }
+
+                $rootScope.redireccionar(login, preferencias)
+            }
+            $rootScope.redireccionar = function (login, preferencias) {
+                $rootScope.login        = login
+                $rootScope.preferencias = preferencias
+
+                validarRedireccionamiento()
+            }
+            validarRedireccionamiento()
+
+
+            // animate.css
             const active = $(".app-menu .nav-link.active").parent().index()
             const click  = $(`[href^="#${path}"]`).parent().index()
 
-            if (active != click) {
+            if ((active <= 0)
+            ||  (click  <= 0)
+            ||  (active == click)) {
+                $rootScope.slide = "animate__animated animate__faster animate__bounceIn"
+            }
+            else if (active != click) {
                 $rootScope.slide  = "animate__animated animate__faster animate__slideIn"
                 $rootScope.slide += ((active > click) ? "Left" : "Right")
             }
 
-            $timeout(function () {
-                $("html").css("overflow-x", "auto")
 
+            $timeout(function () {
                 $rootScope.slide = ""
-            }, 1000)
+
+                // solo hacer al cargar la página por primera vez
+                if (timesChangesSuccessRoute == 0) {
+                    timesChangesSuccessRoute++
+
+                    // gets
+                    const startTimeRequest = Date.now()
+                    $.get("fechaHora", function (fechaHora) {
+                        const endTimeRequest = Date.now()
+                        const rtt            = endTimeRequest - startTimeRequest
+                        const delay          = rtt / 2
+
+                        const lxFechaHoraServidor = DateTime.fromFormat(fechaHora, "yyyy-MM-dd hh:mm:ss")
+                        // const fecha = lxFechaHoraServidor.toFormat("dd/MM/yyyy hh:mm:ss")
+                        const lxLocal = luxon.DateTime.fromMillis(endTimeRequest - delay)
+
+                        diffMs = lxFechaHoraServidor.toMillis() - lxLocal.toMillis()
+                    })
+
+                    $.get("preferencias", {
+                        token: localStorage.getItem("fbt")
+                    }, function (respuesta) {
+                        if (typeof respuesta != "object") {
+                            return
+                        }
+
+                        console.log("✅ Respuesta recibida:", respuesta)
+
+                        const login      = "1"
+                        let preferencias = respuesta
+
+                        localStorage.setItem("login", login)
+                        localStorage.setItem("preferencias", JSON.stringify(preferencias))
+                        $rootScope.redireccionar(login, preferencias)
+                    })
+                }
+            }, 500)
 
             activeMenuOption(`#${path}`)
         }
@@ -80,8 +277,7 @@ app.controller("appCtrl", function ($scope, $http) {
         event.preventDefault()
         $.post("iniciarSesion", $(this).serialize(), function (respuesta) {
             if (respuesta.length) {
-                alert("Iniciaste Sesión")
-                window.location = "/#/productos"
+                location.reload()
 
                 return
             }
@@ -90,32 +286,44 @@ app.controller("appCtrl", function ($scope, $http) {
         })
     })
 })
-app.controller("productosCtrl", function ($scope, $http) {
+app.controller("productosCtrl", function ($scope, $http, $rootScope) {
     function buscarProductos() {
-        $.get("/tbodyProductos", function (trsHTML) {
-            $("#tbodyProductos").html(trsHTML)
+        $.get("productos/buscar", {
+            busqueda: ""
+        }, function (productos) {
+            $("#tbodyProductos").html("")
+            for (let x in productos) {
+                const producto = productos[x]
+
+                $("#tbodyProductos").append(`<tr>
+                    <td>${producto.Id_Producto}</td>
+                    <td>${producto.Nombre_Producto}</td>
+                    <td>${producto.Precio}</td>
+                    <td>${producto.Existencias}</td>
+                    <td>
+                        <button class="btn btn-info btn-ingredientes" data-id="${producto.Id_Producto}">Ver ingredientes...</button>
+                        <button class="btn btn-danger btn-eliminar" data-id="${producto.Id_Producto}">Eliminar</button>
+                    </td>
+                </tr>`)
+            }
         })
     }
 
     buscarProductos()
     
-    // Enable pusher logging - don't include this in production
+    let preferencias = $rootScope.preferencias
+
     Pusher.logToConsole = true
 
-    var pusher = new Pusher("e57a8ad0a9dc2e83d9a2", {
-      cluster: "us2"
+    const pusher = new Pusher("12cb9c6b5319b2989000", {
+        cluster: "us2"
     })
-
-    var channel = pusher.subscribe("canalProductos")
-    channel.bind("eventoProductos", function(data) {
-        // alert(JSON.stringify(data))
-        buscarProductos()
-    })
+    const channel = pusher.subscribe("canalProductos")
 
     $(document).on("submit", "#frmProducto", function (event) {
         event.preventDefault()
 
-        $.post("/producto", {
+        $.post("producto", {
             id: "",
             nombre: $("#txtNombre").val(),
             precio: $("#txtPrecio").val(),
@@ -123,10 +331,22 @@ app.controller("productosCtrl", function ($scope, $http) {
         })
     })
 
+    $(document).on("click", "#chkActualizarAutoTbodyProductos", function (event) {
+        if (this.checked) {
+            channel.bind("eventoProductos", function(data) {
+                // alert(JSON.stringify(data))
+                buscarProductos()
+            })
+            return
+        }
+
+        channel.unbind("eventoProductos")
+    })
+
     $(document).on("click", ".btn-ingredientes", function (event) {
         const id = $(this).data("id")
 
-        $.get(`/productos/ingredientes/${id}`, function (html) {
+        $.get(`productos/ingredientes/${id}`, function (html) {
             modal(html, "Ingredientes", [
                 {html: "Aceptar", class: "btn btn-secondary", fun: function (event) {
                     closeModal()
@@ -134,27 +354,39 @@ app.controller("productosCtrl", function ($scope, $http) {
             ])
         })
     })
-})
 
+    $(document).on("click", ".btn-eliminar", function (event) {
+        const id = $(this).data("id")
+
+        modal("Eliminar este producto?", 'Confirmaci&oacute;n', [
+            {html: "No", class: "btn btn-secondary", dismiss: true},
+            {html: "Sí", class: "btn btn-danger", defaultButton: true, fun: function () {
+                $.post(`producto/eliminar`, {
+                    id: id
+                }, function (respuesta) {
+                    closeModal()
+                })
+            }}
+        ])
+    })
+})
 
 
 app.controller("decoracionesCtrl", function ($scope, $http) {
     function buscarDecoraciones() {
-        $.get("/tbodyDecoraciones", function (trsHTML) {
+        $.get("tbodyDecoraciones", function (trsHTML) {
             $("#tbodyDecoraciones").html(trsHTML)
         })
     }
 
     buscarDecoraciones()
     
-    // Enable pusher logging - don't include this in production
     Pusher.logToConsole = true
 
-    var pusher = new Pusher("e57a8ad0a9dc2e83d9a2", {
-      cluster: "us2"
+    const pusher = new Pusher("12cb9c6b5319b2989000", {
+        cluster: "us2"
     })
-
-    var channel = pusher.subscribe("canalDecoraciones")
+    const channel = pusher.subscribe("canalDecoraciones")
     channel.bind("eventoDecoraciones", function(data) {
         // alert(JSON.stringify(data))
         buscarDecoraciones()
@@ -163,7 +395,7 @@ app.controller("decoracionesCtrl", function ($scope, $http) {
     $(document).on("submit", "#frmDecoracion", function (event) {
         event.preventDefault()
 
-        $.post("/decoracion", {
+        $.post("decoracion", {
             id: "",
             nombre: $("#txtNombre").val(),
             precio: $("#txtPrecio").val(),
@@ -173,21 +405,6 @@ app.controller("decoracionesCtrl", function ($scope, $http) {
 })
 
 
-
-const DateTime = luxon.DateTime
-let lxFechaHora
-
 document.addEventListener("DOMContentLoaded", function (event) {
-    const configFechaHora = {
-        locale: "es",
-        weekNumbers: true,
-        // enableTime: true,
-        minuteIncrement: 15,
-        altInput: true,
-        altFormat: "d/F/Y",
-        dateFormat: "Y-m-d",
-        // time_24hr: false
-    }
-
     activeMenuOption(location.hash)
 })

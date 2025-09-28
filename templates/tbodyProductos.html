@@ -4,6 +4,9 @@
     <td>{{ producto.Nombre_Producto }}</td>
     <td>{{ producto.Precio }}</td>
     <td>{{ producto.Existencias }}</td>
-    <td><button class="btn btn-info btn-ingredientes" data-id="{{ producto.Id_Producto }}">Ver ingredientes...</button></td>
+    <td>
+        <button class="btn btn-info btn-ingredientes" data-id="{{ producto.Id_Producto }}">Ver ingredientes...</button>
+        <button class="btn btn-danger btn-eliminar" data-id="{{ producto.Id_Producto }}">Eliminar</button>
+    </td>
 </tr>
 {% endfor %}
