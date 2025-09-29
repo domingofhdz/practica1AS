@@ -161,7 +161,7 @@ app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, 
             }
         })
 
-
+        // solo hacer si se carga una ruta existente que no sea el splash
         if (path.indexOf("splash") == -1) {
             // validar login
             function validarRedireccionamiento() {
@@ -227,12 +227,231 @@ app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, 
             }
 
 
+            // swipe
+            if (path.indexOf("productos") != -1) {
+                $rootScope.leftView      = ""
+                $rootScope.rightView     = "Ventas"
+                $rootScope.leftViewLink  = ""
+                $rootScope.rightViewLink = "#/ventas"
+            }
+            else if (path.indexOf("ventas") != -1) {
+                $rootScope.leftView      = "Productos"
+                $rootScope.rightView     = "Notificaciones"
+                $rootScope.leftViewLink  = "#/productos"
+                $rootScope.rightViewLink = "#/notificaciones"
+            }
+            else {
+                $rootScope.leftView      = ""
+                $rootScope.rightView     = ""
+                $rootScope.leftViewLink  = ""
+                $rootScope.rightViewLink = ""
+            }
+
+            let offsetX
+            let threshold
+            let startX = 0
+            let startY = 0
+            let currentX = 0
+            let isDragging = false
+            let isScrolling = false
+            let moved = false
+            let minDrag = 5
+
+            function resetDrag() {
+                offsetX = -window.innerWidth
+                threshold = window.innerWidth / 4
+                $("#appSwipeWrapper").get(0).style.transition = "transform 0s ease"
+                $("#appSwipeWrapper").get(0).style.transform = `translateX(${offsetX}px)`
+            }
+            function startDrag(event) {
+                if (isScrolling && isPartiallyVisible($("#appContent").get(0))) {
+                    resetDrag()
+                }
+
+                isDragging  = true
+                moved       = false
+                isScrolling = false
+
+                startX = getX(event)
+                startY = getY(event)
+
+                $("#appSwipeWrapper").get(0).style.transition = "none"
+                document.body.style.userSelect = "none"
+            }
+            function onDrag(event) {
+                if (!isDragging
+                ||  $(event.target).parents("table").length
+                ||  $(event.target).parents("button").length
+                ||  $(event.target).parents("span").length
+                ||   (event.target.nodeName == "BUTTON")
+                ||   (event.target.nodeName == "SPAN")
+                || $(event.target).parents(".plotly-grafica").length
+                || $(event.target).hasClass("plotly-grafica")) {
+                    return
+                }
+
+                let x = getX(event)
+                let y = getY(event)
+
+                let deltaX = x - startX
+                let deltaY = y - startY
+                
+                if (isScrolling) {
+                    if (isPartiallyVisible($("#appContent").get(0))) {
+                        resetDrag()
+                    }
+                    return
+                }
+
+                if (!moved) {
+                    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                        isScrolling = true
+                        return
+                    }
+                }
+
+                if (Math.abs(deltaX) > minDrag) {
+                    moved = true
+                }
+
+                currentX = offsetX + deltaX
+                $("#appSwipeWrapper").get(0).style.transform = `translateX(${currentX}px)`
+                $("#appSwipeWrapper").get(0).style.cursor = "grabbing"
+
+                event.preventDefault()
+            }
+            function isVisible(element) {
+                const rect = element.getBoundingClientRect()
+                return rect.left >= 0 && rect.right <= window.innerWidth
+            }
+            function isPartiallyVisible(element) {
+                const rect = element.getBoundingClientRect()
+                return rect.right > 0 && rect.left < window.innerWidth
+            }
+            function endDrag() {
+                if (!isDragging) {
+                    return
+                }
+                $("#appSwipeWrapper").get(0).style.cursor = "grab"
+                isDragging = false
+                document.body.style.userSelect = ""
+                if (isScrolling) {
+                    if (isPartiallyVisible($("#appContent").get(0))) {
+                        resetDrag()
+                    }
+                    return
+                }
+
+                if (!moved) {
+                    $("#appSwipeWrapper").get(0).style.transition = "transform 0.3s ease"
+                    $("#appSwipeWrapper").get(0).style.transform = `translateX(${offsetX}px)`
+                    return
+                }
+
+                let delta = currentX - offsetX
+                let finalX = offsetX
+
+                let href, visible
+
+                if (delta > threshold && offsetX < 0) {
+                    finalX = offsetX + window.innerWidth
+                    $("#appContentLeft").css("visibility", "visible")
+                    $("#appContentRight").css("visibility", "hidden")
+                    href = $("#appContentLeft").children("div").eq(0).attr("data-href")
+                    visible = isPartiallyVisible($("#appContentLeft").get(0))
+                } else if (delta < -threshold && offsetX > -2 * window.innerWidth) {
+                    finalX = offsetX - window.innerWidth
+                    $("#appContentLeft").css("visibility", "hidden")
+                    $("#appContentRight").css("visibility", "visible")
+                    href = $("#appContentRight").children("div").eq(0).attr("data-href")
+                    visible = isPartiallyVisible($("#appContentRight").get(0))
+                }
+
+                if (href && visible) {
+                    resetDrag()
+                    $timeout(function () {
+                        window.location = href
+                    }, 100)
+                } else if (!href) {
+                    resetDrag()
+                    return
+                }
+
+                $("#appSwipeWrapper").get(0).style.transition = "transform 0.3s ease"
+                $("#appSwipeWrapper").get(0).style.transform = `translateX(${finalX}px)`
+                offsetX = finalX
+            }
+            function getX(event) {
+                return event.touches ? event.touches[0].clientX : event.clientX
+            }
+            function getY(event) {
+                return event.touches ? event.touches[0].clientY : event.clientY
+            }
+            function completeScreen() {
+                $(".div-to-complete-screen").css("height", 0)
+                const altoHtml    = document.documentElement.getBoundingClientRect().height
+                const altoVisible = document.documentElement.clientHeight
+                $(".div-to-complete-screen").css("height", ((altoHtml < altoVisible)
+                ? (altoVisible - altoHtml)
+                : 0) + (16 * 4))
+            }
+
+            $(document).off("mousedown touchstart mousemove touchmove click", "#appSwipeWrapper")
+
+            $(document).on("mousedown",  "#appSwipeWrapper", startDrag)
+            $(document).on("touchstart", "#appSwipeWrapper", startDrag)
+            $(document).on("mousemove",  "#appSwipeWrapper", onDrag)
+            // $(document).on("touchmove",  "#appSwipeWrapper", onDrag)
+            document.querySelector("#appSwipeWrapper").addEventListener("touchmove", onDrag, {
+                passive: false
+            })
+            $(document).on("mouseup",    "#appSwipeWrapper", endDrag)
+            $(document).on("mouseleave", "#appSwipeWrapper", endDrag)
+            $(document).on("touchend",   "#appSwipeWrapper", endDrag)
+            $(document).on("click",      "#appSwipeWrapper", function (event) {
+                if (moved) {
+                    event.stopImmediatePropagation()
+                    event.preventDefault()
+                    return false
+                }
+            })
+            $(window).on("resize", function (event) {
+                resetDrag()
+                completeScreen()
+            })
+
+            resetDrag()
+
+
+            // solo hacer una vez cargada la animación
             $timeout(function () {
+                // animate.css
                 $rootScope.slide = ""
+
+
+                // swipe
+                completeScreen()
+
 
                 // solo hacer al cargar la página por primera vez
                 if (timesChangesSuccessRoute == 0) {
                     timesChangesSuccessRoute++
+                    
+
+                    // JQuery Validate
+                    $.extend($.validator.messages, {
+                        required: "Llena este campo",
+                        number: "Solo números",
+                        digits: "Solo números enteros",
+                        min: $.validator.format("No valores menores a {0}"),
+                        max: $.validator.format("No valores mayores a {0}"),
+                        minlength: $.validator.format("Mínimo {0} caracteres"),
+                        maxlength: $.validator.format("Máximo {0} caracteres"),
+                        rangelength: $.validator.format("Solo {0} caracteres"),
+                        equalTo: "El texto de este campo no coincide con el anterior",
+                        date: "Ingresa fechas validas",
+                        email: "Ingresa un correo electrónico valido"
+                    })
 
 
                     // gets
@@ -312,7 +531,7 @@ app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, 
     })
 }])
 
-app.controller("appCtrl", function ($scope, $http) {
+app.controller("appCtrl", function ($scope, $http, $rootScope) {
     $("#frmInicioSesion").submit(function (event) {
         event.preventDefault()
 
