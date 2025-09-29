@@ -77,6 +77,14 @@
     <script src="{{ url_for("static", filename="js/app.js") }}"></script>
 </head>
 <body>
+    <div id="appSpinnerGrow" ng-if="spinnerGrow">
+        <div class="text-center p-5 m-5">
+            <div class="spinner-grow p-5 m-5" style="width: 80px; height: 80px;" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    </div>
+
     <div id="appBanner" class="ng-hide" ng-show="!spinnerGrow">
         <div id="appHeader" class="text-end fw-bolder" style="font-size: 1.25rem;">
             <i class="bi bi-clock"></i>
@@ -103,14 +111,6 @@
     
     
         </ul>
-    </div>
-
-    <div id="appSpinnerGrow" ng-if="spinnerGrow">
-        <div class="text-center p-5 m-5">
-            <div class="spinner-grow p-5 m-5" style="width: 80px; height: 80px;" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-        </div>
     </div>
 
     <div id="app" class="container p-3 {{ '{{ slide }}' }}" ng-view></div>
