@@ -64,16 +64,16 @@ def login(fun):
 def index():
     return render_template("index.html")
 
+@app.route("/app")
+def app2():
+    return render_template("login.html")
+    # return "<h5>Hola, soy la view app</h5>"
+
 @app.route("/fechaHora")
 def fechaHora():
     tz    = pytz.timezone("America/Matamoros")
     ahora = datetime.datetime.now(tz)
     return ahora.strftime("%Y-%m-%d %H:%M:%S")
-
-@app.route("/app")
-def app2():
-    return render_template("login.html")
-    # return "<h5>Hola, soy la view app</h5>"
 
 @app.route("/iniciarSesion", methods=["POST"])
 # Usar cuando solo se quiera usar CORS en rutas específicas
