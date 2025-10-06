@@ -61,11 +61,15 @@ def login(fun):
     return decorador
 
 @app.route("/")
-def index():
-    return render_template("index.html")
+def landingPage():
+    return render_template("landing-page.html")
 
-@app.route("/app")
-def app2():
+@app.route("/dashboard")
+def dashboard():
+    return render_template("dashboard.html")
+
+@app.route("/login")
+def appLogin():
     return render_template("login.html")
     # return "<h5>Hola, soy la view app</h5>"
 

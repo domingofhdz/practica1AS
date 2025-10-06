@@ -55,8 +55,8 @@ app.config(function ($routeProvider, $locationProvider) {
 
     $routeProvider
     .when("/", {
-        templateUrl: "app",
-        controller: "appCtrl"
+        templateUrl: "login",
+        controller: "loginCtrl"
     })
     .when("/productos", {
         templateUrl: "productos",
@@ -531,7 +531,7 @@ app.run(["$rootScope", "$location", "$timeout", function($rootScope, $location, 
     })
 }])
 
-app.controller("appCtrl", function ($scope, $http, $rootScope) {
+app.controller("loginCtrl", function ($scope, $http, $rootScope) {
     $("#frmInicioSesion").submit(function (event) {
         event.preventDefault()
 
