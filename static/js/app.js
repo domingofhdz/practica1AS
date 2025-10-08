@@ -7,7 +7,6 @@ function activeMenuOption(href) {
     .addClass("active")
     .attr("aria-current", "page")
 }
-
 function disableAll() {
     const elements = document.querySelectorAll(".while-waiting")
     elements.forEach(function (el, index) {
@@ -15,7 +14,6 @@ function disableAll() {
         el.classList.add("disabled")
     })
 }
-
 function enableAll() {
     const elements = document.querySelectorAll(".while-waiting")
     elements.forEach(function (el, index) {
@@ -23,7 +21,6 @@ function enableAll() {
         el.classList.remove("disabled")
     })
 }
-
 function debounce(fun, delay) {
     let timer
     return function (...args) {
