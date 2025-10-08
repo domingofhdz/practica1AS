@@ -31,6 +31,9 @@ function debounce(fun, delay) {
     }
 }
 
+const DateTime = luxon.DateTime
+let lxFechaHora
+let diffMs = 0
 const configFechaHora = {
     locale: "es",
     weekNumbers: true,
@@ -41,10 +44,6 @@ const configFechaHora = {
     dateFormat: "Y-m-d",
     // time_24hr: false
 }
-
-const DateTime = luxon.DateTime
-let lxFechaHora
-let diffMs = 0
 
 const app = angular.module("angularjsApp", ["ngRoute"])
 app.config(function ($routeProvider, $locationProvider) {
